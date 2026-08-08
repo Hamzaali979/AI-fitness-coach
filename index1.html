@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <script src="script.js"></script>
+  <script>"https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"</script>
+<script>"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"</script>
+<script>"https://www.gstatic.com/firebasejs/12.16.0/firebase-database-compat.js"</script>
+
+  <script>
+    const firebaseConfig = {
+    apiKey: "AIzaSyDRQuWLXpx3Pz5vuY76cN__kxie8ewOdmo",
+    authDomain: "hackathon-33ac9.firebaseapp.com",
+    projectId: "hackathon-33ac9",
+    storageBucket: "hackathon-33ac9.firebasestorage.app",
+    messagingSenderId: "1076701996269",
+    appId: "1:1076701996269:web:5455c21ac91ae8924758e4",
+    measurementId: "G-23GQ1R82K5"
+  };
+  firebase.initializeApp(firebaseConfig)
+  </script>
+<body>
+  <div id="toast"></div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="screen">
+  <div class="onboard-glow"></div>
+  <div class="onboard-card">
+    <div class="brand large"><span class="brand-mark">✦</span> Fit<span>AI</span></div>
+    <div class="eyebrow">PERSONAL FITNESS INTELLIGENCE</div>
+    <h1>Build your own<br><span>digital fitness coach.</span></h1>
+    <p class="muted">Set your profile once. FitAI builds your dashboard, training plan, nutrition guide and daily habits around your goal.</p>
+
+    <div class="steps">
+      <span class="step active">1</span><i></i><span class="step">2</span><i></i><span class="step">3</span>
+    </div>
+
+    <div id="onboardStep1" class="onboard-step">
+      <label>Your name<input id="oName" placeholder="e.g. Hamza"></label>
+      <div class="two">
+        <label>Age<input id="oAge" type="number" min="13" max="100" placeholder="16"></label>
+        <label>Sex<select id="oSex"><option value="">Select</option><option value="male">Male</option><option value="female">Female</option></select></label>
+      </div>
+      <button class="primary" onclick="nextOnboard(2)">Continue <b>→</b></button>
+    </div>
+
+    <div id="onboardStep2" class="onboard-step hidden">
+      <div class="two">
+        <label>Height (cm)<input id="oHeight" type="number" placeholder="170"></label>
+        <label>Weight (kg)<input id="oWeight" type="number" placeholder="60"></label>
+      </div>
+      <label>Activity level
+        <select id="oActivity">
+          <option value="low">Lightly active</option>
+          <option value="moderate" selected>Moderately active</option>
+          <option value="high">Very active</option>
+        </select>
+      </label>
+      <button class="primary" onclick="nextOnboard(3)">Continue <b>→</b></button>
+      <button class="ghost" onclick="nextOnboard(1)">Back</button>
+    </div>
+
+    <div id="onboardStep3" class="onboard-step hidden">
+      <div class="goal-grid">
+        <button class="goal-choice" data-goal="muscle" onclick="selectGoal(this)">💪<strong>Build Muscle</strong><small>Strength & muscle</small></button>
+        <button class="goal-choice" data-goal="fatloss" onclick="selectGoal(this)">🔥<strong>Healthy Fat Loss</strong><small>Fitness & habits</small></button>
+        <button class="goal-choice" data-goal="fitness" onclick="selectGoal(this)">⚡<strong>Get Fitter</strong><small>Strength + cardio</small></button>
+        <button class="goal-choice" data-goal="maintain" onclick="selectGoal(this)">⚖️<strong>Maintain</strong><small>Stay consistent</small></button>
+      </div>
+      <button class="primary" onclick="finishSetup()">Build My Coach <b>→</b></button>
+      <button class="ghost" onclick="nextOnboard(2)">Back</button>
+    </div>
+    <p class="tiny-note">Prototype calculations are estimates, not medical advice.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">✦</span> Fit<span>AI</span></div>
+    <div class="profile-mini">
+      <div id="avatar" class="avatar">H</div>
+      <div><b id="sideName">User</b><small>Personal plan active</small></div>
+    </div>
+
+    <div class="nav-label">COACH</div>
+    <button class="nav active" data-page="dashboard" onclick="go('dashboard')">⌂ <span>Dashboard</span></button>
+    <button class="nav" data-page="coach" onclick="go('coach')">✦ <span>AI Coach</span><em>AI</em></button>
+    <button class="nav" data-page="workout" onclick="go('workout')">◈ <span>Workout</span></button>
+    <button class="nav" data-page="nutrition" onclick="go('nutrition')">◉ <span>Nutrition</span></button>
+
+    <div class="nav-label">TRACK</div>
+    <button class="nav" data-page="habits" onclick="go('habits')">✓ <span>Daily Habits</span></button>
+    <button class="nav" data-page="progress" onclick="go('progress')">↗ <span>Progress</span></button>
+    <button class="nav" data-page="library" onclick="go('library')">▦ <span>Exercise Library</span></button>
+
+    <div class="sidebar-bottom">
+      <div class="coach-status"><span class="online"></span><div><b>FitAI Coach</b><small>Ready to help</small></div></div>
+      <button class="nav" onclick="logout()">↪ <span>Reset profile</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><div class="eyebrow">FITNESS INTELLIGENCE</div><h2 id="pageTitle">Dashboard</h2></div>
+      <div class="top-actions">
+        <button class="icon-btn" onclick="showToast('Your plan is saved automatically.')">⌁</button>
+        <div class="avatar" id="topAvatar">H</div>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page">
+      <div class="hero">
+        <div>
+          <div class="eyebrow green">YOUR DAILY COACH</div>
+          <h1>Ready to train, <span id="helloName">User</span>?</h1>
+          <p class="muted">Your plan is personalized around your goal. Follow today's steps and keep your streak alive.</p>
+        </div>
+        <button class="primary compact" onclick="go('coach')">Ask FitAI ✦</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-icon purple">◒</span><small>BMI</small><strong id="bmi">—</strong><label id="bmiLabel">—</label></div>
+        <div class="stat"><span class="stat-icon orange">♨</span><small>EST. ENERGY</small><strong id="calories">—</strong><label>kcal/day</label></div>
+        <div class="stat"><span class="stat-icon blue">◉</span><small>WATER</small><strong><b id="water">0</b><i>/8</i></strong><label><button class="link-btn" onclick="addWater()">+ Add glass</button></label></div>
+        <div class="stat"><span class="stat-icon green">🔥</span><small>STREAK</small><strong><b id="streak">0</b><i> days</i></strong><label>Consistency wins</label></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Today's checklist</h3><p>Complete the basics first.</p></div><b class="green" id="dashPercent">0%</b></div>
+          <div class="progress"><span id="dashBar"></span></div>
+          <div id="dashHabits" class="habit-list"></div>
+        </div>
+
+        <div class="panel ai-panel">
+          <div class="ai-orb">✦</div>
+          <div class="eyebrow green">FITAI COACH</div>
+          <h2>Your coach is ready.</h2>
+          <p class="muted">Ask about your workout, meals, recovery, hydration, exercises or your current plan.</p>
+          <div class="suggestions">
+            <button onclick="askQuick('What should I do today?')">Today's plan</button>
+            <button onclick="askQuick('What should I eat after training?')">Post-workout meal</button>
+            <button onclick="askQuick('How can I recover better?')">Recovery</button>
+          </div>
+          <button class="primary compact" onclick="go('coach')">Open AI Coach →</button>
+        </div>
+      </div>
+
+      <div class="panel goal-banner">
+        <div><div class="eyebrow green">YOUR CURRENT GOAL</div><h2 id="goalTitle">—</h2><p id="goalDesc" class="muted">—</p></div>
+        <div class="goal-ring"><span id="goalRing">0%</span><small>today</small></div>
+      </div>
+    </section>
+
+    <!-- COACH -->
+    <section id="page-coach" class="page hidden">
+      <div class="section-title"><div><div class="eyebrow green">PERSONAL FITNESS ASSISTANT</div><h1>AI Coach</h1><p class="muted">Ask fitness-related questions and get guidance from your local coaching knowledge base.</p></div></div>
+      <div class="coach-layout">
+        <div class="chat">
+          <div id="messages" class="messages">
+            <div class="msg bot"><span>✦</span><div><b>FitAI Coach</b><p>Hey! I'm your digital fitness coach. Ask me about workouts, food, protein, water, sleep, recovery, BMI, warm-ups, exercise technique or your daily plan.</p></div></div>
+          </div>
+          <div class="quick-row">
+            <button onclick="askQuick('Build me a beginner workout')">Beginner workout</button>
+            <button onclick="askQuick('Give me a meal plan')">Meal plan</button>
+            <button onclick="askQuick('How much protein do I need?')">Protein</button>
+            <button onclick="askQuick('How should I warm up?')">Warm-up</button>
+          </div>
+          <div class="chatbar"><input id="chatInput" placeholder="Ask your fitness question..." onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">↑</button></div>
+        </div>
+        <div class="panel coach-side">
+          <div class="ai-orb">✦</div><h3>What I can help with</h3>
+          <div class="capability">💪 Training plans</div>
+          <div class="capability">🥗 Meal structure</div>
+          <div class="capability">💧 Hydration habits</div>
+          <div class="capability">😴 Recovery & sleep</div>
+          <div class="capability">📊 Your dashboard</div>
+          <div class="capability">🏃 Exercise guidance</div>
+          <p class="tiny-note">For pain, injury, eating concerns or medical conditions, talk to a qualified professional.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKOUT -->
+    <section id="page-workout" class="page hidden">
+      <div class="section-title"><div><div class="eyebrow green">PERSONALIZED TRAINING</div><h1>Workout Plan</h1><p class="muted">Your current session is selected from your goal and activity level.</p></div><button class="primary compact" onclick="completeWorkout()">✓ Complete session</button></div>
+      <div id="workoutPlan" class="workout-grid"></div>
+    </section>
+
+    <!-- NUTRITION -->
+    <section id="page-nutrition" class="page hidden">
+      <div class="section-title"><div><div class="eyebrow green">SMART NUTRITION</div><h1>Nutrition Plan</h1><p class="muted">Simple meal structure. Adjust portions to your needs and appetite.</p></div></div>
+      <div class="nutrition-summary panel">
+        <div><small>EST. DAILY ENERGY</small><strong id="nutritionCalories">—</strong><span>kcal/day</span></div>
+        <div><div class="macro"><span>Protein</span><b id="proteinTarget">—</b></div><div class="macro"><span>Carbs</span><b>Balanced</b></div><div class="macro"><span>Fats</span><b>Balanced</b></div></div>
+      </div>
+      <div id="mealPlan" class="meal-grid"></div>
+    </section>
+
+    <!-- HABITS -->
+    <section id="page-habits" class="page hidden">
+      <div class="section-title"><div><div class="eyebrow green">DAILY SYSTEM</div><h1>Habit Tracker</h1><p class="muted">Small actions repeated consistently create progress.</p></div></div>
+      <div class="habit-layout">
+        <div class="panel"><div class="panel-head"><div><h3>Today's habits</h3><p id="habitSummary">0 of 6 completed</p></div><b class="green" id="habitBigPercent">0%</b></div><div class="progress"><span id="habitBigBar"></span></div><div id="fullHabits"></div></div>
+        <div class="panel water-panel"><div class="water-big">💧</div><h2><span id="water2">0</span> / 8 glasses</h2><p class="muted">Keep water nearby and sip regularly.</p><button class="primary" onclick="addWater()">+ Add glass</button><button class="ghost" onclick="resetWater()">Reset today</button></div>
+      </div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section id="page-progress" class="page hidden">
+      <div class="section-title"><div><div class="eyebrow green">YOUR JOURNEY</div><h1>Progress</h1><p class="muted">Your local progress data stays in your browser.</p></div></div>
+      <div class="progress-grid">
+        <div class="panel big-score"><div class="eyebrow">TODAY</div><strong id="progressPercent">0%</strong><span>daily completion</span><div class="circle-progress"><i id="circleProgress"></i></div></div>
+        <div class="panel">
+          <h3>Profile snapshot</h3>
+          <div class="snapshot"><span>Goal</span><b id="snapGoal">—</b></div>
+          <div class="snapshot"><span>Height</span><b id="snapHeight">—</b></div>
+          <div class="snapshot"><span>Weight</span><b id="snapWeight">—</b></div>
+          <div class="snapshot"><span>BMI</span><b id="snapBMI">—</b></div>
+        </div>
+        <div class="panel">
+          <h3>Consistency</h3>
+          <div class="snapshot"><span>Current streak</span><b id="snapStreak">0 days</b></div>
+          <div class="snapshot"><span>Workouts completed</span><b id="snapWorkouts">0</b></div>
+          <div class="snapshot"><span>Water today</span><b id="snapWater">0 / 8</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section id="page-library" class="page hidden">
+      <div class="section-title"><div><div class="eyebrow green">MOVEMENT DATABASE</div><h1>Exercise Library</h1><p class="muted">Search exercises and see their main focus.</p></div></div>
+      <input id="exerciseSearch" class="search" placeholder="Search: squat, push-up, plank..." oninput="renderLibrary()">
+      <div id="libraryGrid" class="library-grid"></div>
+    </section>
+  </main>
+</div>
+</body>
+
